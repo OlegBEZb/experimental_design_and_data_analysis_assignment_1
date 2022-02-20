@@ -207,10 +207,59 @@ your conclusion about normality of the data), construct a 97%-CI for
 the 97%-CI is at most 2. Compute a bootstrap 97%-CI for \$\\mu\$ and
 compare it to the above CI.
 
+Let's check the normality using Shapiro-Wilk test. $H_0$ is that sample
+$x$ came from normally distributed population.
+
 ```{r}
 shapiro.test(x)
 ```
 
 From the output, the p-value \> 0.05 implying that the distribution of
-the data are not significantly different from normal distribution. In
-other words, we can assume the normality.
+the data are not significantly different from normal distribution, i.e.
+the null hypothesis can not be rejected. In other words, we can assume
+the normality.
+
+Estimated mean value:
+
+```{r}
+mu = mean(x)
+mu
+```
+
+Next, we are going to construct a 97%-CI for $\mu$. The standard
+deviation $\sigma$ is unknown, therefore, we estimate it by $s$.
+
+```{r}
+s = sd(x)
+s
+```
+
+The confidence interval in such a case is based on a t-distribution and
+the upper t-quantile.
+
+```{r}
+alpha <- 1 - 0.97
+n <- length(x)
+ta <- qt(1-alpha, df=n-1)
+ta
+```
+
+t-confidence interval of level 3% for $\mu$:
+
+```{r}
+CI_97 <- list(mu - ta*s/sqrt(n), mu + ta*s/sqrt(n))
+CI_97
+```
+
+Next, we evaluate the sample size needed to provide that the length of
+the 97%-CI is at most 2. For this, we have to solve
+$t_{\alpha / 2} \frac{s}{\sqrt{n}} \leq E$ for $n$.
+
+```{r}
+E <- 2 
+n_min <- (ta*s/E)^2
+n_min
+```
+
+To provide the length of the 97%-CI less than 2, we have to collect the
+sample of at lest 63 objects
