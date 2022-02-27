@@ -399,3 +399,175 @@ prop.test(c(2, 6), c(5, 10))
 
 There is no significant evidence that the waiting time is different for
 men and women.
+
+## **Exercise 2.** Seeded clouds
+
+\
+To improve rain fall in dry areas, an experiment was carried out with 52
+clouds. Scientists investigated whether the addition of silver nitrate
+leads to more rainfall. They chose 26 out of a sample of 52 clouds and
+seeded it with silver nitrate. The file clouds.txt contains the
+precipitation values (records the rainfall in feet per acre) of seeded
+and unseeded clouds.
+
+```{r}
+clouds <- read.table("data/clouds.txt", header=TRUE)
+
+par(mfrow=c(2, 3))
+hist(clouds$seeded)
+hist(clouds$unseeded)
+hist(clouds$unseeded - clouds$seeded)
+qqnorm(clouds$seeded)
+qqnorm(clouds$unseeded)
+qqnorm(clouds$unseeded - clouds$seeded)
+```
+
+```{r}
+shapiro.test(clouds$unseeded - clouds$seeded)
+```
+
+From the histograms we can easily notice that data is distributed not
+normally. The distributions look closer to exponential. The difference
+also is not distributed normally according to Shapiro-Wilk test.
+
+a)  Test whether silver nitrate has an effect by performing three tests:
+    the two samples t-test (argue whether the data are paired or not),
+    the Mann-Whitney test and the Kolmogorov-Smirnov test. Indicate
+    whether these tests are actually applicable for our research
+    question. Comment on your findings.
+
+The data might be counted as paired if the data was collected in the
+following way: two more or less similar clouds are found not far from
+each other and only one of them is seeded. In the target experiment, the
+half of clouds was selected without any requirements so we are not
+assuming that the samples are paired.
+
+```{r}
+t.test(clouds$unseeded, clouds$seeded, paired=FALSE)
+```
+
+According to two not paired samples t-test, the $H_0$ states that the
+means are equal is not rejected. T-test actually may not be performed on
+our data as the columns are even approximately not distributed normally
+as well as their difference.
+
+Mann-Whitney test doesn't assume normality and, therefore may be
+applied. The data is continuous and we can limit the alternative to a
+shift in location.
+
+```{r}
+wilcox.test(clouds$unseeded, clouds$seeded)
+median(clouds$unseeded); median(clouds$seeded)
+```
+
+According to Mann-Whitney test, $H_0$ of equal means is rejected. The
+underlying distribution of precipitation for seeded clouds is shifted to
+the right from that of unseeded ones.
+
+Kolmogorov-Smirnov test also doesn't assume normality. $H_0$: equality
+of continuous distributions.
+
+```{r}
+ks.test(clouds$unseeded, clouds$seeded)
+mean(clouds$unseeded); mean(clouds$seeded)
+```
+
+Kolmogorov-Smirnov test also rejects $H_0$. The mean amount of
+precipitation is larger for seeded clouds than for unseeded.
+
+b)  Repeat the procedures from a) first on the square root of the values
+    in *clouds.txt*, then on the square root of the square root of the
+    values in *clouds.txt*. Comment on your findings.
+
+```{r}
+unseeded_sqrt <- sqrt(clouds$unseeded)
+seeded_sqrt <- sqrt(clouds$seeded)
+
+par(mfrow=c(1, 2))
+hist(seeded_sqrt)
+hist(unseeded_sqrt)
+```
+
+Not the data looks more normal. Let's check it for normality once again.
+
+```{r}
+shapiro.test(unseeded_sqrt)
+shapiro.test(seeded_sqrt)
+```
+
+The p-value \< 0.05 for both columns. This implies that the
+distributions of the data are significantly different from normal
+distribution. This means that t-test may not be performed on our data
+and applied just for interest.
+
+```{r}
+t.test(unseeded_sqrt, seeded_sqrt, paired=FALSE)
+wilcox.test(unseeded_sqrt, seeded_sqrt)
+ks.test(unseeded_sqrt, seeded_sqrt)
+```
+
+In this case t-test rejects the $H_0$, so means of squared values a
+significantly different. Interestingly, Wilcoxon and Kolmogorov-Smirnov
+tests remained completely the same as they are both based on ranks. The
+ranks remain the same because square root function increases
+monotonically.
+
+```{r}
+unseeded_sqrt_sqrt <- sqrt(unseeded_sqrt)
+seeded_sqrt_sqrt <- sqrt(seeded_sqrt)
+
+par(mfrow=c(1, 2))
+hist(seeded_sqrt_sqrt)
+hist(unseeded_sqrt_sqrt)
+```
+
+Not the data looks normal. Let's check it for normality once again.
+
+```{r}
+shapiro.test(unseeded_sqrt_sqrt)
+shapiro.test(seeded_sqrt_sqrt)
+```
+
+From the output, the p-value \> 0.05 for both columns implying that the
+distributions of the data are not significantly different from normal
+distribution. Only now, for 4th roots of columns we can apply t-test.
+
+```{r}
+t.test(unseeded_sqrt_sqrt, seeded_sqrt_sqrt, paired=FALSE)
+wilcox.test(unseeded_sqrt_sqrt, seeded_sqrt_sqrt)
+ks.test(unseeded_sqrt_sqrt, seeded_sqrt_sqrt)
+```
+
+Wilcoxon and Kolmogorov-Smirnov tests didn't change for the same reason
+as before. But now all three tests reject $H_0$ and we can conclude that
+for 4th roots of measurements, the columns are distributed differently.
+
+c)  Let X1,...,X26 be the sample for seeded clouds (column *seeded*).
+    Assuming X1,...,X26$\sim$Exp($\lambda$) and using the central limit
+    theorem, find an estimate $\hat{\lambda}$ of $\lambda$ and construct
+    a 95%-CI for $\lambda$. By using a bootstrap test with the test
+    statistic T=median(X1,...,X26), test the hypothesis
+    H0:X1,...,X26$\sim$Exp($\lambda_0$) with the parameter
+    $\lambda_0$=$\hat{\lambda}$. Test this also by the
+    Kolmogorov-Smirnov test.
+
+    ```{r}
+    seeded <- clouds$seeded
+
+    B <- 1000
+    Tstar <- numeric(B)
+    for(i in 1:B){
+      Xstar <- sample(seeded, replace=TRUE)
+      Tstar[i] <- mean(Xstar)
+    }
+    lambda_hat <- 1/mean(Tstar)
+    lambda_hat
+    hist(Tstar)
+    ```
+
+    ![\\frac{1}{\\lambda}](https://wikimedia.org/api/rest_v1/media/math/render/svg/d496a9397007733fdbbb2f98433e7aab4e51ff4f){alt="\\frac{1}{\\lambda}"}
+
+d)   Using an appropriate test, verify whether the median precipitation
+    for seeded clouds is less than 300. Next, design and perform a test
+    to check whether the fraction of the seeded clouds with the
+    precipitation less than 30 is at most 25%.
