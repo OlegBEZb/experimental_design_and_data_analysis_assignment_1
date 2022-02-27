@@ -547,7 +547,7 @@ c)  Let X1,...,X26 be the sample for seeded clouds (column *seeded*).
     theorem, find an estimate $\hat{\lambda}$ of $\lambda$ and construct
     a 95%-CI for $\lambda$. By using a bootstrap test with the test
     statistic T=median(X1,...,X26), test the hypothesis
-    H0:X1,...,X26$\sim$Exp($\lambda_0$) with the parameter
+    $H_0$:X1,...,X26$\sim$Exp($\lambda_0$) with the parameter
     $\lambda_0$=$\hat{\lambda}$. Test this also by the
     Kolmogorov-Smirnov test.
 
@@ -565,9 +565,66 @@ c)  Let X1,...,X26 be the sample for seeded clouds (column *seeded*).
     hist(Tstar)
     ```
 
-    ![\\frac{1}{\\lambda}](https://wikimedia.org/api/rest_v1/media/math/render/svg/d496a9397007733fdbbb2f98433e7aab4e51ff4f){alt="\\frac{1}{\\lambda}"}
+    ```{r}
+    alpha <- 1 - 0.95
+    deltastar <- 1/Tstar - lambda_hat
+    d <- quantile(deltastar, c(alpha/2, 1-alpha/2))
+    CI95 = lambda_hat - c(d[2], d[1])
+    lambda_hat; CI95
+    ```
 
-d)   Using an appropriate test, verify whether the median precipitation
+    Next, we check $H_0$: X1,...,X26$\sim$Exp($\lambda_0$) with the
+    parameter $\lambda_0$=$\hat{\lambda}$ using a bootstrap test.
+
+    ```{r}
+    B <- 1000
+    t <- median(seeded)
+    tstar <- numeric(B)
+    n <- length(seeded)
+    for(i in 1:B){
+      xstar <- rexp(n, lambda_hat)
+      tstar[i] <- median(xstar)
+    }
+    pl <- sum(tstar<t)/B
+    pr <- sum(tstar>t)/B
+    p <- 2*min(pl, pr)
+    pl;pr;p
+    ```
+
+    There is no evidence against $H_0$. Let's test the same hypothesis
+    with Kolmogorov-Smirnov test:
+
+    ```{r}
+    ks.test(seeded, rexp(n, lambda_hat))
+    ```
+
+    This test also doesn't reject the null hypothesis.
+
+d)  Using an appropriate test, verify whether the median precipitation
     for seeded clouds is less than 300. Next, design and perform a test
     to check whether the fraction of the seeded clouds with the
     precipitation less than 30 is at most 25%.
+
+To check whether the median precipitation for seeded clouds is less than
+300 ($H_1$), we will use binomial test for a proportion. The test is
+non--parametric, so we do not assume that the data is normally
+distributed. As the theoretical probabilities are equal, the binomial
+test becomes its special case - sign test.
+
+```{r}
+binom.test(sum(seeded<300), length(seeded), p = 0.5, alternative = "less", conf.level = 0.95)
+```
+
+Since this is not less than 0.05, we fail to reject the null hypothesis.
+We do not have sufficient evidence to say that median precipitation for
+seeded clouds is less than 300.
+
+Similarly, we check whether the fraction of the seeded clouds with the
+precipitation less than 30 is at most 25%.
+
+```{r}
+binom.test(sum(seeded<30), length(seeded), p = 0.25, alternative = "less", conf.level = 0.95)
+```
+
+Again, we do not have sufficient evidence to say that the fraction of
+the seeded clouds with the precipitation less than 30 is at most 25%.
