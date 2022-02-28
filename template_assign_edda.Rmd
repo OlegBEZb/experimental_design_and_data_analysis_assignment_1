@@ -1,6 +1,6 @@
 ---
 title: "Assignment template"
-author: "Oleg Litvinov, Oguzhan Yetkin, group 2"
+author: "Oleg Litvinov, Oguzhan Yetkin, group 4"
 date: "28 February 2022"
 output:
   pdf_document: default
@@ -497,6 +497,7 @@ drug type on the concentration of plasma epinephrine.
 We also have to check normality of errors.
 
 ```{r, fig.width=4,fig.height=2}
+shapiro.test(residuals(aov))
 par(mfrow=c(1,2)); qqnorm(residuals(aov)); plot(fitted(aov),residuals(aov))
 ```
 
@@ -504,7 +505,7 @@ Residuals look normal and the fitted values show no pattern against
 them.
 
 ```{r}
-summary(aov)
+summary(aov)$coefficients
 ```
 
 The estimated concentrations are 0.434, 0.035, 0.419 for isofluorane,
@@ -514,7 +515,7 @@ reveal a significant difference from 0.
 ### d) Does the Kruskal-Wallis test arrive at the same conclusion about the effect of drug as the test in c)? Explain possible differences between conclusions of the Kruskal-Wallis and ANOVA tests.
 
 ```{r}
-kruskal.test(concentration ~ variety, data = dogframe)
+kruskal.test(concentration ~ variety, data = dogframe)[[3]]
 ```
 
 $H_0$ is not rejected. The Kruskal-Wallis test did not arrive at the
@@ -539,7 +540,6 @@ set
 
 ```{r}
 blood <- read.table("data/hemoglobin.txt", header=TRUE)
-summary(blood)
 set.seed(42)
 rows <- sample(nrow(blood))
 randomized <- blood[rows, ]
@@ -575,6 +575,20 @@ influence at all (HOWEVER NOT SURE ABOUT THAT)
 
 ## Exercise 5. Sour cream.
 
+The file cream.txt contains data on an experiment to produce sour cream.
+Yogurt was placed in sweet cream, and yogurt bacteria were allowed to
+develop. Bacteria produce lactic acid, and as a surrogate for the number
+of yogurt bacteria, the acidity of the cream was measured. Interest was
+in the effect of the type of yogurt (denoted as *starter*) on *acidity*.
+The mixtures of yogurt and sweet cream were kept at constant temperature
+in a yogurt maker, in which five different positions could be used. The
+experiment was carried out with five batches of sweet cream, which were
+meant to have the same composition. With each batch each of five types
+of starter was used, with the yogurt placed in one of the five
+positions. The combinations of levels of three factors form a
+three-dimensional latin square. (You may need to install the R-package
+*lme4*, which is not included in the standard distribution of R.)
+
 ### a)  Analyze the data in a three-way experiment without interactions with acidity as response and starter, batch and position as factors.
 
 By using summary command, can you tell whether there is a significant
@@ -582,8 +596,22 @@ difference between the effects of starter 1 and starter 2 on acidity?
 
 ```{r}
 cream <- read.table("data/cream.txt", header=TRUE)
-attach(cream)
 
-model <- lm(acidity ~ batch + position + starter, data = cream)
-summary(model)
+cream$starter <- factor(cream$starter)
+cream$position <- factor(cream$position)
+cream$batch <- factor(cream$batch)
+
+aovcream <- lm(acidity~batch+position+starter,data=cream)
+anova(aovcream)
 ```
+
+Repeated Anova is used to analyze these data. The results of the
+analysis show that batch has a significant effect p =0.00163 and starter
+has a significant effect p = 2.904e-05. However position does not show a
+significant effect p = 0.411.
+
+### b) Recall that the main interest is in the effect of starter on the acidity; factors *positions* and *batches* represent the block variables. Remove insignificant block variable(s) if there are such, and perform an ANOVA for the resulting "fixed effects" model. Which starter(s) lead to significantly different acidity?
+
+### c) For the model from b), can we also apply the Friedman test to test whether there is an effect of starter on acidity? Motivate your answer.
+
+### d) Repeat b) by performing a mixed effects analysis, modeling the block variable(s) (if there are any) as a random effect by using the function *lmer*. Compare your results to the results found by using the fixed effects model in b).
