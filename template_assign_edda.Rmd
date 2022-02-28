@@ -1,7 +1,7 @@
 ---
 title: "Assignment template"
-author: "James Bond, group 007"
-date: "1 February 2033"
+author: "Oleg Litvinov, Oguzhan Yetkin, group 2"
+date: "28 February 2022"
 output:
   pdf_document: default
   html_document:
@@ -14,135 +14,6 @@ editor_options:
     wrap: 72
 ---
 
-## Short introduction to R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax
-for authoring HTML, PDF, and MS Word documents. R Markdown files permit
-you to interweave R code with ordinary text to produce well-formatted
-data analysis reports that are easy to modify. The R Markdown file
-itself shows the readers exactly how you got the results in your report.
-For more details on using R Markdown see
-[\color{blue}{\underline{http://rmarkdown.rstudio.com}}](http://rmarkdown.rstudio.com).
-
-When you click the **Knit** button, a document will be generated that
-includes both content as well as the output of any embedded R code
-chunks within the document. For inline R code, surround code with back
-ticks and r. R replaces inline code with its results. For example, two
-plus one is `r 2+1`; for the build-in R dataset `cars`, there were
-`r nrow(cars)` cars studied. You can embed an R code chunk like this:
-
-```{r}
-summary(cars)
-```
-
-### Figures
-
-You can also embed plots, for example:
-
-```{r,echo=FALSE,fig.height=3.5}
-plot(cars)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to
-prevent printing of the R code that generated the plot. Use knitr
-options to style the output of a chunk. Place options in brackets above
-the chunk. Other options with the defaults are: the `eval=FALSE` option
-just displays the R code (and does not run it); `warning=TRUE` whether
-to display warnings; `tidy=TRUE` wraps long code so it does not run off
-the page.
-
-You can control the size and placement of figures. For example, you can
-put two figures (or more) next to each other. Use `par(mfrow=c(n,m))` to
-create `n` by `m` plots in one picture in R. You can adjust the
-proportions of figures by using the `fig.width` and `fig.height` chunk
-options. These are specified in inches, and will be automatically scaled
-down to fit within the handout margin. Chunk option `fig.align` takes
-values `left`, `right`, or `center` (to align figures in the output
-document).
-
-```{r,fig.margin = TRUE,fig.width=6,fig.height=3,fig.align="center"}
-par(mfrow=c(1,2)); x1=rnorm(50); hist(x1); qqnorm(x1)
-```
-
-You can arrange for figures to span across the entire page by using the
-`fig.fullwidth` chunk option.
-
-```{r,fig.fullwidth=TRUE,fig.height=3}
-plot(iris$Sepal.Length,iris$Petal.Length,xlab="Sepal.Length",ylab="Petal.Length")
-```
-
-More about chunk options can be found at
-[\color{blue}{\underline{https://yihui.name/knitr/options/}}](https://yihui.name/knitr/options/).
-
-### Equations
-
-To produce mathematical symbols, you can also include
-\LaTeX expessions/equations in your report: inline
-$\frac{d}{dx}\left(\int_{0}^{x} f(u)\,du\right)=f(x)$ and in the display
-mode: <!-- \[ -->
-<!-- \frac{d}{dx}\left( \int_{0}^{x} f(u)\,du\right)=f(x). -->
-<!-- \] --> To be able to use this functionality, \LaTeX has to be
-installed.
-
-### Images
-
-Want an image? This will do it. To depict an image (say, `my_image.jpg`
-which should be in your current working directory), use this command
-
-<!-- ![caption for my image](my_image.jpg) -->
-
-### Tables
-
-Want a table? This will create one (note that the separators *do not*
-have to be aligned).
-
-| Table Header | Second Header |
-|--------------|---------------|
-| Table Cell   | Cell 2        |
-| Cell 3       | Cell 4        |
-
-You can also make table by using knit's `kable` function:
-
-```{r echo=FALSE, results='asis'}
-library(knitr)
-kable(mtcars[1:5,],caption="A knit kable.")
-```
-
-### Block quote
-
-> This will create a block quote, if you want one.
-
-### Verbatim
-
-    This text is displayed verbatim/preformatted.
-
-### Links
-
-Links: <http://example.com>, [in-text link to
-Google](http://google.com).
-
-This is a \hyperlink{target1}{{\color{blue}{\underline{hyperlink}}}}.
-
-\hypertarget{target1}{{\color{blue}{\underline{This}}}}
-
-is where the hyperlink jumps to.
-
-## Exercise 1
-
-**c)** We often do not need to report the whole output of R-commands,
-only certain values of the output. For example, below we perform a
-two-sample t-test and report only the (appropriately rounded) values of
-t-statistics and the p-pavue.
-
-```{r}
-mu=0;nu=0.5
-x=rnorm(50,mu,1); y=rnorm(50,nu,1) # creating artificial data
-ttest=t.test(x,y) 
-```
-
-The value of t-statistics in the above evaluation is
-`r round(ttest[[1]],2)` and the p-value is `r round(ttest[[3]],4)`.
-
 ## Exercise 1. Waiting time.
 
 A researcher measured (in minutes) how long patients have to wait in the
@@ -151,7 +22,8 @@ waiting room of a doctor's office: 15.4, 17.9, 19.0, 0.5, 15.9, 2.7,
 time by $\mu$.
 
 ```{r}
-x <- as.numeric(list(15.4, 17.9, 19.0, 0.5, 15.9, 2.7, 6.2, 2.5, 4.7, 6.9, 10.8, 24.3, 5.6, 23.0, 10.7))
+x <- as.numeric(list(15.4, 17.9, 19.0, 0.5, 15.9, 2.7, 6.2, 2.5, 
+                     4.7, 6.9, 10.8, 24.3, 5.6, 23.0, 10.7))
 ```
 
 ### a) Check normality of the data. Assuming normality (irrespective of your conclusion about normality of the data), construct a 97%-CI for $\mu$. Evaluate the sample size needed to provide that the length of the 97%-CI is at most 2. Compute a bootstrap 97%-CI for $\mu$ and compare it to the above CI.
@@ -399,7 +271,7 @@ the right from that of unseeded ones.
 Kolmogorov-Smirnov test also doesn't assume normality. $H_0$: equality
 of continuous distributions.
 
-```{r}
+```{r, warning=FALSE}
 ks.test(clouds$unseeded, clouds$seeded)
 mean(clouds$unseeded); mean(clouds$seeded)
 ```
@@ -409,7 +281,7 @@ precipitation is larger for seeded clouds than for unseeded.
 
 ### b) Repeat the procedures from a) first on the square root of the values in *clouds.txt*, then on the square root of the square root of the values in *clouds.txt*. Comment on your findings.
 
-```{r}
+```{r, fig.width=6,fig.height=3}
 unseeded_sqrt <- sqrt(clouds$unseeded)
 seeded_sqrt <- sqrt(clouds$seeded)
 
@@ -430,7 +302,7 @@ distributions of the data are significantly different from normal
 distribution. This means that t-test may not be performed on our data
 and applied just for interest.
 
-```{r}
+```{r, warning=FALSE}
 t.test(unseeded_sqrt, seeded_sqrt, paired=FALSE)
 wilcox.test(unseeded_sqrt, seeded_sqrt)
 ks.test(unseeded_sqrt, seeded_sqrt)
@@ -442,7 +314,7 @@ tests remained completely the same as they are both based on ranks. The
 ranks remain the same because square root function increases
 monotonically.
 
-```{r}
+```{r, fig.width=6,fig.height=3}
 unseeded_sqrt_sqrt <- sqrt(unseeded_sqrt)
 seeded_sqrt_sqrt <- sqrt(seeded_sqrt)
 
@@ -462,7 +334,7 @@ From the output, the p-value \> 0.05 for both columns implying that the
 distributions of the data are not significantly different from normal
 distribution. Only now, for 4th roots of columns we can apply t-test.
 
-```{r}
+```{r, warning=FALSE}
 t.test(unseeded_sqrt_sqrt, seeded_sqrt_sqrt, paired=FALSE)
 wilcox.test(unseeded_sqrt_sqrt, seeded_sqrt_sqrt)
 ks.test(unseeded_sqrt_sqrt, seeded_sqrt_sqrt)
@@ -474,7 +346,7 @@ for 4th roots of measurements, the columns are distributed differently.
 
 ### c) Let X1,...,X26 be the sample for seeded clouds (column *seeded*). Assuming X1,...,X26$\sim$Exp($\lambda$) and using the central limit theorem, find an estimate $\hat{\lambda}$ of $\lambda$ and construct a 95%-CI for $\lambda$. By using a bootstrap test with the test statistic T=median(X1,...,X26), test the hypothesis $H_0$:X1,...,X26$\sim$Exp($\lambda_0$) with the parameter $\lambda_0$=$\hat{\lambda}$. Test this also by the Kolmogorov-Smirnov test.
 
-```{r}
+```{r, fig.width=3,fig.height=3}
 seeded <- clouds$seeded
 
 B <- 1000
@@ -523,7 +395,7 @@ ks.test(seeded, rexp(n, lambda_hat))
 
 This test also doesn't reject the null hypothesis.
 
-### c) Using an appropriate test, verify whether the median precipitation for seeded clouds is less than 300. Next, design and perform a test to check whether the fraction of the seeded clouds with the precipitation less than 30 is at most 25%.
+### d) Using an appropriate test, verify whether the median precipitation for seeded clouds is less than 300. Next, design and perform a test to check whether the fraction of the seeded clouds with the precipitation less than 30 is at most 25%.
 
 To check whether the median precipitation for seeded clouds is less than
 300 ($H_1$), we will use binomial test for a proportion. The test is
@@ -577,63 +449,100 @@ that these dogs are not from a normal population.
 
 ### b)  Investigate whether the columns isofluorane and halothane are correlated. Apply relevant tests to verify whether the distributions of these columns are different. Is a permutation test applicable?
 
-```{r}
-cor.test(dogs$isofluorane, dogs$halothane , method="spearman")
+As isofluorane column is not normally distributed, we use non-parametric
+correlation test.
+
+```{r, warning=FALSE}
+cor.test(dogs$isofluorane, dogs$halothane, method="spearman")
 ```
 
-```{r}
-if (!require("coin")) install.packages("coin")
-library(coin)
-```
+The result shows small correlation according to Cohen rho = 0.218846.
+Therefore we conclude that the correlation is small and not significant.
+
+To check whether the distributions of these columns are different, we
+apply a permutation test as normality is not assumed.
 
 ```{r}
-independence_test(dogs$isofluorane ~ dogs$halothane) 
+mystat <- function(x, y) {mean(x-y)}
+B <- 1000; tstar <- numeric(B)
+for (i in 1:B){
+  dogstar <- t(apply(cbind(dogs[,1], dogs[,2]), 1, sample))
+  tstar[i] <- mystat(dogstar[,1], dogstar[,2])
+}
+myt <- mystat(dogs[,1], dogs[,2])
+pl <- sum(tstar<myt)/B
+pr <- sum(tstar>myt)/B
+p <- 2*min(pl, pr)
+pl;pr;p
 ```
 
-To test whether isofluorane and halothane are correlated it is used a
-spearman correlation test. The result shows small correlation according
-to Cohen rho = 0.218846. Therefore we conclude that the correlation is
-small, however a permuation test is applicable because of a small sample
-size. However the permutation test also does not show a significant
-correlation p-value = 0.6349.
+A permutation test with mean statistic didn't reject the $H_0$ that
+there is no difference between the distributions of isofluorane and
+halothane columns.
 
 ### c)  Conduct a one-way ANOVA to determine whether the type of drug has an effect on the concentration of plasma epinephrine. Give the estimated concentrations for each of the three anesthesia drugs.
 
 ```{r}
-combined<-data.frame(cbind(dogs$isofluorane, dogs$halothane, dogs$cyclopropane))
-stacked <- stack(combined)
-anova_results <-aov(values ~ ind, data = stacked )
-summary(anova_results)
+dogframe <- data.frame(concentration=as.vector(as.matrix(dogs)),
+                    variety=factor(rep(1:3, each=10)))
+aov <- lm(concentration~variety, data=dogframe)
+anova(aov)
 ```
 
 First of all the data has been conducted to one column of data set and
 then a one way anova has been conducted. The result of this one way
-anova is significant ; p = 0,011. From this it has to be conluded that
-the type of the drug (isofluorane/halothane/cyclopropane) makes.
+anova is significant (p = 0,011), therefore there is an effect of the
+drug type on the concentration of plasma epinephrine.
+
+We also have to check normality of errors.
+
+```{r, fig.width=4,fig.height=2}
+par(mfrow=c(1,2)); qqnorm(residuals(aov)); plot(fitted(aov),residuals(aov))
+```
+
+Residuals look normal and the fitted values show no pattern against
+them.
+
+```{r}
+summary(aov)
+```
+
+The estimated concentrations are 0.434, 0.035, 0.419 for isofluorane,
+halothane, and cyclopropane respectively. For halothane t-test doesn't
+reveal a significant difference from 0.
 
 ### d) Does the Kruskal-Wallis test arrive at the same conclusion about the effect of drug as the test in c)? Explain possible differences between conclusions of the Kruskal-Wallis and ANOVA tests.
 
 ```{r}
-kruskal.test(values ~ ind, data = stacked)
+kruskal.test(concentration ~ variety, data = dogframe)
 ```
 
-The Kruskal-Wallis test did not arrive at the same conclusion as the one
-way anova. The result was insignificant p-value = 0.05948 which showed a
-significant result p = 0.011. compared to the anova The Kruskal-Wallis
-test is a non-parametric counterpart of ANOVA which does not rely on
-normality but on ranks thereby a bit less powerful results than 1-way
-ANOVA.
+$H_0$ is not rejected. The Kruskal-Wallis test did not arrive at the
+same conclusion as the one way ANOVA. Compared to the ANOVA, the
+Kruskal-Wallis test is a non-parametric counterpart of ANOVA which does
+not rely on normality but on ranks thereby a bit less powerful results
+than 1-way ANOVA.
 
 ## Exercise 4. Hemoglobin in trout.
+
+Hemoglobin is measured (g/100 ml.) in the blood of brown trout after 35
+days of treatment with four rates of sulfamerazine: the daily rates of
+0, 5, 10 and 15 g of sulfamerazine per 100 pounds of fish, denoted as
+rates 1, 2, 3 and 4, respectively. (Beware that the levels of the factor
+rate are coded by numbers.) Two methods (denoted as A and B) of
+administering the sulfamerazine were used. The data is collected in data
+set
+[hemoglobin.txt](https://canvas.vu.nl/courses/60044/files/4714874?wrap=1 "hemoglobin.txt")[
+](https://canvas.vu.nl/courses/60044/files/4714874/download?download_frd=1).
 
 ### a) Present an R-code for the randomization process to distribute 80 fishes over all combinations of levels of factors rate and method.
 
 ```{r}
-BLOOD <- read.table("data/hemoglobin.txt", header=TRUE)
-summary(BLOOD)
+blood <- read.table("data/hemoglobin.txt", header=TRUE)
+summary(blood)
 set.seed(42)
-rows <- sample(nrow(BLOOD))
-randomized <- BLOOD[rows, ]
+rows <- sample(nrow(blood))
+randomized <- blood[rows, ]
 ```
 
 ### b)  Perform the two-way ANOVA to test for effects of factors rate, method and their interaction on the response variable hemoglobin. Comment on your findings.
