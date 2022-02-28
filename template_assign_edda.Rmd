@@ -1,5 +1,5 @@
 ---
-title: "Assignment template"
+title: "Assignment 1"
 author: "Oleg Litvinov, Oguzhan Yetkin, group 4"
 date: "28 February 2022"
 output:
@@ -570,8 +570,10 @@ res.aov <- aov(hemoglobin ~ rate, data = randomized)
 summary(res.aov)
 ```
 
-Yes it is usefull because we already have shown that method has no
-influence at all (HOWEVER NOT SURE ABOUT THAT)
+Yes, it is useful because we already have shown that method has no
+influence at all. And because we have already shown that rate does
+significantly influence hemoglobin it is useful to know whether there is
+a difference in the number of rates on hemoglobin.
 
 ## Exercise 5. Sour cream.
 
@@ -642,3 +644,18 @@ $H_0$ is rejected. There is an effect of starter on acidity taking into
 account the blocking factor batch.
 
 ### d) Repeat b) by performing a mixed effects analysis, modeling the block variable(s) (if there are any) as a random effect by using the function *lmer*. Compare your results to the results found by using the fixed effects model in b).
+
+```{r}
+if (!require("lme4")) install.packages("lme4")
+library(lme4)
+```
+
+```{r}
+cream_lmer <- lmer(acidity ~ starter + (1|batch), REML=FALSE, data=cream)
+#summary(cream_lmer)
+cream_lmer1 <- lmer(acidity ~ starter + (1|batch), REML=FALSE, data=cream)
+#anova(cream_lmer)
+```
+
+The outputs don't fit the report but the model from b is launched via
+mixed effects analysis.
