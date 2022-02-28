@@ -496,9 +496,9 @@ drug type on the concentration of plasma epinephrine.
 
 We also have to check normality of errors.
 
-```{r, fig.width=4,fig.height=2}
+```{r, fig.width=4, fig.height=2}
 shapiro.test(residuals(aov))
-par(mfrow=c(1,2)); qqnorm(residuals(aov)); plot(fitted(aov),residuals(aov))
+par(mfrow=c(1,2)); qqnorm(residuals(aov)); plot(fitted(aov), residuals(aov))
 ```
 
 Residuals look normal and the fitted values show no pattern against
@@ -601,17 +601,44 @@ cream$starter <- factor(cream$starter)
 cream$position <- factor(cream$position)
 cream$batch <- factor(cream$batch)
 
-aovcream <- lm(acidity~batch+position+starter,data=cream)
+aovcream <- lm(acidity ~ batch + position + starter, data=cream)
 anova(aovcream)
 ```
 
 Repeated Anova is used to analyze these data. The results of the
-analysis show that batch has a significant effect p =0.00163 and starter
-has a significant effect p = 2.904e-05. However position does not show a
-significant effect p = 0.411.
+analysis show that batch has a significant effect p = 0.00163 and
+starter has a significant effect p = 2.904e-05. However position does
+not show a significant effect p = 0.411.
+
+```{r, fig.width=4, fig.height=2}
+shapiro.test(residuals(aovcream))
+par(mfrow=c(1,2)); qqnorm(residuals(aovcream)); plot(fitted(aovcream), residuals(aovcream))
+```
+
+The residuals also look normal and the fitted values show no pattern
+against them.
 
 ### b) Recall that the main interest is in the effect of starter on the acidity; factors *positions* and *batches* represent the block variables. Remove insignificant block variable(s) if there are such, and perform an ANOVA for the resulting "fixed effects" model. Which starter(s) lead to significantly different acidity?
 
+```{r}
+ONLYIM <- lm(acidity ~ starter + batch, data=cream)
+
+summary(ONLYIM)$coefficients
+```
+
+Only starter 4 leads to a significant effect on acidity p = 2.01e-05.
+
 ### c) For the model from b), can we also apply the Friedman test to test whether there is an effect of starter on acidity? Motivate your answer.
+
+Friedman test doesn't rely on normality as it's based on ranks and works
+only with N=1.
+
+```{r}
+attach(cream)
+friedman.test(acidity, starter, batch, data=cream)
+```
+
+$H_0$ is rejected. There is an effect of starter on acidity taking into
+account the blocking factor batch.
 
 ### d) Repeat b) by performing a mixed effects analysis, modeling the block variable(s) (if there are any) as a random effect by using the function *lmer*. Compare your results to the results found by using the fixed effects model in b).
