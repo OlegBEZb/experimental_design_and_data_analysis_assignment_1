@@ -190,7 +190,7 @@ ttest=t.test(x,y)
 The value of t-statistics in the above evaluation is
 `r round(ttest[[1]],2)` and the p-value is `r round(ttest[[3]],4)`.
 
-## Exercite 1. Waiting time.
+## Exercise 1. Waiting time.
 
 A researcher measured (in minutes) how long patients have to wait in the
 waiting room of a doctor's office: 15.4, 17.9, 19.0, 0.5, 15.9, 2.7,
@@ -400,7 +400,7 @@ prop.test(c(2, 6), c(5, 10))
 There is no significant evidence that the waiting time is different for
 men and women.
 
-## **Exercise 2.** Seeded clouds
+## **Exercise 2.** Seeded clouds.
 
 \
 To improve rain fall in dry areas, an experiment was carried out with 52
@@ -628,3 +628,143 @@ binom.test(sum(seeded<30), length(seeded), p = 0.25, alternative = "less", conf.
 
 Again, we do not have sufficient evidence to say that the fraction of
 the seeded clouds with the precipitation less than 30 is at most 25%.
+
+## Exercise 3. Concentrations of epinephrine.
+
+a) Is it reasonable to assume that the three columns of dogs.txt were
+taken from normal populations?
+
+```{r}
+dogs <- read.table("data/dogs.txt", header=TRUE)
+shapiro.test(dogs$isofluorane)
+shapiro.test(dogs$cyclopropane)
+shapiro.test(dogs$halothane)
+```
+
+Only the data from isofluorane show a normal distribution p-value =
+0.03434. However the other values cyclopropane, and halothane clearly
+are not normal distribution. We conclude that these dogs are not from a
+normal population.
+
+b) Investigate whether the columns isofluorane and halothane are
+correlated. Apply relevant tests to verify whether the distributions of
+these columns are different. Is a permutation test applicable?
+
+```{r}
+with(dogs, cor.test(isofluorane, halothane , method="spearman"))
+```
+
+```{r}
+if (!require("coin")) install.packages("coin")
+library(coin)
+```
+
+```{r}
+independence_test(dogs$isofluorane ~ dogs$halothane) 
+```
+
+To test whether isofluorane and halothane is correlated it is used a
+spearman correlation test. The result show small correlation according
+to Cohen rho = 0.218846. Therefore we conclude that the correlation is
+small however a permuation test is applicable because of a small sample
+size. However the permutation test also does not show a significant
+correlation p-value = 0.6349.
+
+c) Conduct a one-way ANOVA to determine whether the type of drug has an
+effect on the concentration of plasma epinephrine. Give the estimated
+concentrations for each of the three anesthesia drugs.
+
+```{r}
+data2 <- read.table("data/dogs.txt", header=TRUE)
+attach(data2)
+
+combined<-data.frame(cbind(isofluorane, halothane, cyclopropane))
+stacked <- stack(combined)
+anova_results <-aov(values ~ ind, data = stacked )
+summary(anova_results)
+```
+
+First of all the data has been conducted to one column of data set and
+then a one way anova has been conducted. The result of this one way
+anova is significant ; p = 0,011. From this it has to be conluded that
+the type of the drug (isofluorane/halothane/cyclopropane) makes.
+
+D)Does the Kruskal-Wallis test arrive at the same conclusion about the
+effect of drug as the test in c)? Explain possible differences between
+conclusions of the Kruskal-Wallis and ANOVA tests.
+
+```{r}
+kruskal.test(values ~ ind, data = stacked)
+```
+
+The Kruskal-Wallis test did not arrive at the same conclusion as the one
+way anova. The result was insignificant p-value = 0.05948 which showed a
+significant result p = 0.011. compared to the anova The Kruskal-Wallis
+test is a non-parametric counterpart of ANOVA which does not rely on
+normality but on ranks thereby a bit less powerful results than 1-way
+ANOVA.
+
+## Exercise 4. Hemoglobin in trout.
+
+a) Present an R-code for the randomization process to distribute 80
+fishes over all combinations of levels of factors rate and method.
+
+```{r}
+BLOOD <- read.table("data/hemoglobin.txt", header=TRUE)
+summary(BLOOD)
+set.seed(42)
+rows <- sample(nrow(BLOOD))
+randomized <- BLOOD[rows, ]
+```
+
+b) Perform the two-way ANOVA to test for effects of factors rate, method
+and their interaction on the response variable hemoglobin. Comment on
+your findings.
+
+```{r}
+res.aov3 <- aov(hemoglobin ~ rate * method, data = randomized)
+summary(res.aov3)
+```
+
+The results of the Two Way Anova analysis show that Rate has a
+significant effect F =11.933, p =0.000905, but method has no significant
+effect F = 1.032, p= 0.312963. Furthermore, there is no interaction
+effect between rate and method F = 0.531, p = 0.468373. The results show
+that only rate is a significant factor in influencing the Hemoglobin
+levels. The method that is used is not important because it does not
+influence the result, accordingly, the method does neither decrease nor
+increase the influence of the rate
+
+c) Which of the two factors has the greatest influence? Is this a good
+question? Consider the additive model. Which combination of rate and
+method yield the highest hemoglobin? Estimate the mean hemoglobin value
+for rate 3 by using method A. What rate leads to the highest mean
+hemoglobin?
+
+d) Test the null hypothesis that the hemoglobin is the same for all
+rates by a one-way ANOVA test, ignoring the variable method. Is it
+right/wrong or useful/not useful to perform this test on this dataset?
+
+```{r}
+res.aov <- aov(hemoglobin ~ rate, data = randomized)
+summary(res.aov)
+```
+
+Yes it is usefull because we already have shown that method has no
+influence at all (HOWEVER NOT SURE ABOUT THAT)
+
+## Exercise 5. Sour cream.
+
+a) Analyze the data in a three-way experiment without interactions with
+acidity as response and starter, batch and position as factors.
+
+By using summary command, can you tell whether there is a significant
+difference between the effects of starter 1 and starter 2 on acidity?
+
+```{r}
+cream <- read.table("data/cream.txt", header=TRUE)
+attach(cream)
+
+model <- lm(acidity ~ batch + position + starter, data = cream)
+summary(model)
+```
