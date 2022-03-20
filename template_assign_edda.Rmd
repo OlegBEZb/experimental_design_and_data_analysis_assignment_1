@@ -31,14 +31,19 @@ x <- as.numeric(list(15.4, 17.9, 19.0, 0.5, 15.9, 2.7, 6.2, 2.5,
 Let's check the normality using Shapiro-Wilk test. $H_0$ is that sample
 $x$ came from normally distributed population.
 
-```{r}
+```{r, fig.width=4, fig.height=8}
+par(mfrow=c(3, 1))
 shapiro.test(x)
+hist(x)
+qqnorm(x)
 ```
 
+\
 From the output, the p-value \> 0.05 implying that the distribution of
 the data are not significantly different from normal distribution, i.e.
 the null hypothesis can not be rejected. In other words, we can assume
-the normality.
+the normality. From the other side, the histogram and the qqplot don't
+look "very" normal.
 
 Estimated mean value:
 
@@ -77,13 +82,13 @@ the 97%-CI is at most 2. For this, we have to solve
 $t_{\alpha / 2} \frac{s}{\sqrt{n}} \leq E$ for $n$.
 
 ```{r}
-E <- 2 
+E <- 1 # a half of an interval
 n_min <- (ta*s/E)^2
 n_min
 ```
 
 To provide the length of the 97%-CI less than 2, we have to collect the
-sample of at lest 88 objects.
+sample of at least `r ceiling(n_min)` objects.
 
 Let's compute a bootstrap 97%-CI for $\mu$ using 1000 samples.
 
@@ -125,14 +130,21 @@ A sign test for median of a single sample may be applied if we state the
 claim as "the median waiting time is less than 15 minutes":
 
 ```{r}
-binom.test(sum(x<15), length(x), p = 0.5, alternative = "less", conf.level = 0.95)
+# for binom test if you are taking sum(x<15) the alternative should be "g"
+res = binom.test(sum(x<15), length(x), p = 0.5, alternative = "greater", conf.level = 0.95)
+res
 ```
 
-The calculated p-value is 0.85. Since this is not less than 0.05, we
+The calculated p-value is `r round(res$p.value, 3)`. Since this is not less than 0.05, we
 fail to reject the null hypothesis. We do not have sufficient evidence
-to say that median waiting time is less than 15 minutes.
+to say that median waiting time is greater than 15 minutes.
 
-In the same manner one-sample Wilcoxon signed rank test may be applied.
+In the same manner one-sample Wilcoxon signed rank test may be applied. The one-sample Wilcoxon signed rank test is a non-parametric alternative to one-sample t-test when the data cannot be assumed to be normally distributed. It’s used to determine whether the median of the sample is equal to a known standard value (i.e. theoretical value). $H_{0}: m \leq m_{0}$, $H_{a}: m>m_{0}$ (greater).
+
+```{r}
+wilcox.test(x, mu=15, alternative="greater")
+```
+The same conclusion from the Wilcoxon sign test.
 
 ### c) Propose a way to compute the powers of the t-test and sign test from b) at $\mu$ = 14 and $\mu$ = 13, comment.
 
@@ -148,17 +160,21 @@ for(m in 13:15){
   ttest <- numeric(B)
   sign <- numeric(B)
   for(i in 1L:B){
-    h1_sample = rnorm(n, mean=m, sd=s)
+    # sd=1 not s
+    h1_sample = rnorm(n, mean=m, sd=1)
     
     ttest[i] <- t.test(h1_sample, mu=mu, alt='l')[[3]]
     sign[i] <- binom.test(sum(h1_sample<mu), length(h1_sample), p = 0.5, 
-                          alternative = "less", conf.level = 0.95)[[3]]
+                          alternative = "greater", conf.level = 0.95)[[3]]
   }
   print(paste0("H1 mu=", m))
   print(paste0("t-test power ", sum(ttest < 0.05)/B))
   print(paste0("sign test power ", sum(sign < 0.05)/B))
 }
 ```
+
+conclusion should have focused on the performance of the test as we move further from
+H0, and that t-test is more powerful under normality assumptions.
 
 ### d) Let *p* be the probability that a patient has to wait longer than 15.5 minutes. Using asymptotic normality, the researcher computed the right end $\hat{p}_{r}$= 0.53 of the confidence interval $\left[\hat{p}_{l}, \hat{p}_{r}\right]$ for *p*. Recover the whole confidence interval and its confidence level.
 
@@ -193,7 +209,7 @@ alpha = (1 - pnorm(z_alpha_by_2))*2
 1-alpha
 ```
 
-It was a 0.89-confidence interval for $p$
+It was a 0.89-confidence level for $p$
 
 ### e) The researcher also reported that there were 3 men and 2 women among 5 patients who had to wait more than 15.5 minutes, 4 men and 6 women among the remaining 10 patients. The researcher claims that the waiting time is different for men and women. Verify this claim by an appropriate test.
 
@@ -210,7 +226,6 @@ men and women.
 
 ## **Exercise 2.** Seeded clouds.
 
-\
 To improve rain fall in dry areas, an experiment was carried out with 52
 clouds. Scientists investigated whether the addition of silver nitrate
 leads to more rainfall. They chose 26 out of a sample of 52 clouds and
@@ -251,9 +266,9 @@ t.test(clouds$unseeded, clouds$seeded, paired=FALSE)
 ```
 
 According to two not paired samples t-test, the $H_0$ states that the
-means are equal is not rejected. T-test actually may not be performed on
+means are equal is not rejected. **T-test actually may not be performed on
 our data as the columns are even approximately not distributed normally
-as well as their difference.
+as well as their difference**.
 
 Mann-Whitney test doesn't assume normality and, therefore may be
 applied. The data is continuous and we can limit the alternative to a
@@ -346,6 +361,8 @@ for 4th roots of measurements, the columns are distributed differently.
 
 ### c) Let X1,...,X26 be the sample for seeded clouds (column *seeded*). Assuming X1,...,X26$\sim$Exp($\lambda$) and using the central limit theorem, find an estimate $\hat{\lambda}$ of $\lambda$ and construct a 95%-CI for $\lambda$. By using a bootstrap test with the test statistic T=median(X1,...,X26), test the hypothesis $H_0$:X1,...,X26$\sim$Exp($\lambda_0$) with the parameter $\lambda_0$=$\hat{\lambda}$. Test this also by the Kolmogorov-Smirnov test.
 
+Graded as "incorrect CI incorrect ks"
+
 ```{r, fig.width=3,fig.height=3}
 seeded <- clouds$seeded
 
@@ -404,7 +421,10 @@ distributed. As the theoretical probabilities are equal, the binomial
 test becomes its special case - sign test.
 
 ```{r}
-binom.test(sum(seeded<300), length(seeded), p = 0.5, alternative = "less", conf.level = 0.95)
+# group with elements < 300 is GREATER (larger) than the opposite (>=) ~in other words~ median is lees than 300
+# this is our H1 (alternative)
+binom.test(sum(seeded<300), length(seeded), p = 0.5, 
+           alternative = "greater", conf.level = 0.95)
 ```
 
 Since this is not less than 0.05, we fail to reject the null hypothesis.
@@ -415,6 +435,7 @@ Similarly, we check whether the fraction of the seeded clouds with the
 precipitation less than 30 is at most 25%.
 
 ```{r}
+# group of interest - less than 30. At most 25 -> the group has to me smaller
 binom.test(sum(seeded<30), length(seeded), p = 0.25, alternative = "less", conf.level = 0.95)
 ```
 
@@ -445,14 +466,15 @@ shapiro.test(dogs$halothane)
 Only the data for isofluorane shows non-normal distribution with a
 p-value of 0.03434. However the concentrations of plasma epinephrine
 under cyclopropane and halothane are normally distributed. We conclude
-that these dogs are not from a normal population.
+that this dogs data is not from a normal population.
 
-### b)  Investigate whether the columns isofluorane and halothane are correlated. Apply relevant tests to verify whether the distributions of these columns are different. Is a permutation test applicable?
+### b) Investigate whether the columns isofluorane and halothane are correlated. Apply relevant tests to verify whether the distributions of these columns are different. Is a permutation test applicable?
 
 As isofluorane column is not normally distributed, we use non-parametric
 correlation test.
 
 ```{r, warning=FALSE}
+cor.test(dogs$isofluorane, dogs$halothane, method="pearson")
 cor.test(dogs$isofluorane, dogs$halothane, method="spearman")
 ```
 
@@ -464,11 +486,16 @@ apply a permutation test as normality is not assumed.
 
 ```{r}
 mystat <- function(x, y) {mean(x-y)}
+
 B <- 1000; tstar <- numeric(B)
+
 for (i in 1:B){
   dogstar <- t(apply(cbind(dogs[,1], dogs[,2]), 1, sample))
   tstar[i] <- mystat(dogstar[,1], dogstar[,2])
 }
+
+hist(tstar)
+
 myt <- mystat(dogs[,1], dogs[,2])
 pl <- sum(tstar<myt)/B
 pr <- sum(tstar>myt)/B
@@ -480,11 +507,23 @@ A permutation test with mean statistic didn't reject the $H_0$ that
 there is no difference between the distributions of isofluorane and
 halothane columns.
 
-### c)  Conduct a one-way ANOVA to determine whether the type of drug has an effect on the concentration of plasma epinephrine. Give the estimated concentrations for each of the three anesthesia drugs.
+```{r}
+wilcox.test(dogs$isofluorane, dogs$halothane)
+```
+H_0 of equal medians is not rejected.
+```{r}
+ks.test(dogs[,1], dogs[,2])
+```
+H_0 of the same population for both samples is not rejected.
+
+### c) Conduct a one-way ANOVA to determine whether the type of drug has an effect on the concentration of plasma epinephrine. Give the estimated concentrations for each of the three anesthesia drugs.
 
 ```{r}
 dogframe <- data.frame(concentration=as.vector(as.matrix(dogs)),
                     variety=factor(rep(1:3, each=10)))
+
+options(contrasts = rep ("contr.treatment", 2)) # or contr.sum
+
 aov <- lm(concentration~variety, data=dogframe)
 anova(aov)
 ```
@@ -496,7 +535,7 @@ drug type on the concentration of plasma epinephrine.
 
 We also have to check normality of errors.
 
-```{r, fig.width=4, fig.height=2}
+```{r, fig.width=8, fig.height=4}
 shapiro.test(residuals(aov))
 par(mfrow=c(1,2)); qqnorm(residuals(aov)); plot(fitted(aov), residuals(aov))
 ```
@@ -533,8 +572,7 @@ rates 1, 2, 3 and 4, respectively. (Beware that the levels of the factor
 rate are coded by numbers.) Two methods (denoted as A and B) of
 administering the sulfamerazine were used. The data is collected in data
 set
-[hemoglobin.txt](https://canvas.vu.nl/courses/60044/files/4714874?wrap=1 "hemoglobin.txt")[
-](https://canvas.vu.nl/courses/60044/files/4714874/download?download_frd=1).
+[hemoglobin.txt](https://canvas.vu.nl/courses/60044/files/4714874?wrap=1 "hemoglobin.txt").
 
 ### a) Present an R-code for the randomization process to distribute 80 fishes over all combinations of levels of factors rate and method.
 
@@ -545,7 +583,12 @@ rows <- sample(nrow(blood))
 randomized <- blood[rows, ]
 ```
 
-### b)  Perform the two-way ANOVA to test for effects of factors rate, method and their interaction on the response variable hemoglobin. Comment on your findings.
+### b) Perform the two-way ANOVA to test for effects of factors rate, method and their interaction on the response variable hemoglobin. Comment on your findings.
+
+We want to test the following null hypotheses:
+1. no interaction between the two factors A and B, 
+2. no main effect of the first factor A,
+3. no main effect of the second factor B.
 
 ```{r}
 res.aov3 <- aov(hemoglobin ~ rate * method, data = randomized)
@@ -553,27 +596,40 @@ summary(res.aov3)
 ```
 
 The results of the Two Way Anova analysis show that Rate has a
-significant effect F =11.933, p =0.000905, but method has no significant
+significant effect F = 11.933, p = 0.000905, but method has no significant
 effect F = 1.032, p= 0.312963. Furthermore, there is no interaction
 effect between rate and method F = 0.531, p = 0.468373. The results show
 that only rate is a significant factor in influencing the Hemoglobin
 levels. The method that is used is not important because it does not
 influence the result, accordingly, the method does neither decrease nor
-increase the influence of the rate
+increase the influence of the rate.
 
-### c)  Which of the two factors has the greatest influence? Is this a good question? Consider the additive model. Which combination of rate and method yield the highest hemoglobin? Estimate the mean hemoglobin value for rate 3 by using method A. What rate leads to the highest mean hemoglobin?
+As interaction is not significant, we check the additive model.
+```{r}
+res.aov4 <- aov(hemoglobin ~ rate + method, data = randomized)
+summary(res.aov4)
+```
+Method is still not important.
 
-### d)  Test the null hypothesis that the hemoglobin is the same for all rates by a one-way ANOVA test, ignoring the variable method. Is it right/wrong or useful/not useful to perform this test on this dataset?
+### c) Which of the two factors has the greatest influence? Is this a good question? Consider the additive model. Which combination of rate and method yield the highest hemoglobin? Estimate the mean hemoglobin value for rate 3 by using method A. What rate leads to the highest mean hemoglobin?
+
+### d) Test the null hypothesis that the hemoglobin is the same for all rates by a one-way ANOVA test, ignoring the variable method. Is it right/wrong or useful/not useful to perform this test on this dataset?
 
 ```{r}
 res.aov <- aov(hemoglobin ~ rate, data = randomized)
 summary(res.aov)
 ```
 
-Yes, it is useful because we already have shown that method has no
+Yes, it is useful because we already have shown that "method" has no
 influence at all. And because we have already shown that rate does
 significantly influence hemoglobin it is useful to know whether there is
 a difference in the number of rates on hemoglobin.
+
+```{r, fig.width=8, fig.height=4}
+shapiro.test(residuals(res.aov))
+par(mfrow=c(1,2)); qqnorm(residuals(res.aov)); plot(fitted(res.aov), residuals(res.aov))
+```
+The residuals look good.
 
 ## Exercise 5. Sour cream.
 
@@ -591,7 +647,7 @@ positions. The combinations of levels of three factors form a
 three-dimensional latin square. (You may need to install the R-package
 *lme4*, which is not included in the standard distribution of R.)
 
-### a)  Analyze the data in a three-way experiment without interactions with acidity as response and starter, batch and position as factors.
+### a) Analyze the data in a three-way experiment without interactions with acidity as response and starter, batch and position as factors.
 
 By using summary command, can you tell whether there is a significant
 difference between the effects of starter 1 and starter 2 on acidity?
@@ -612,7 +668,7 @@ analysis show that batch has a significant effect p = 0.00163 and
 starter has a significant effect p = 2.904e-05. However position does
 not show a significant effect p = 0.411.
 
-```{r, fig.width=4, fig.height=2}
+```{r, fig.width=8, fig.height=4}
 shapiro.test(residuals(aovcream))
 par(mfrow=c(1,2)); qqnorm(residuals(aovcream)); plot(fitted(aovcream), residuals(aovcream))
 ```
@@ -623,12 +679,18 @@ against them.
 ### b) Recall that the main interest is in the effect of starter on the acidity; factors *positions* and *batches* represent the block variables. Remove insignificant block variable(s) if there are such, and perform an ANOVA for the resulting "fixed effects" model. Which starter(s) lead to significantly different acidity?
 
 ```{r}
+# why positions removed?
 ONLYIM <- lm(acidity ~ starter + batch, data=cream)
 
 summary(ONLYIM)$coefficients
 ```
 
 Only starter 4 leads to a significant effect on acidity p = 2.01e-05.
+
+```{r, fig.width=8, fig.height=4}
+shapiro.test(residuals(ONLYIM))
+par(mfrow=c(1,2)); qqnorm(residuals(ONLYIM)); plot(fitted(ONLYIM), residuals(ONLYIM))
+```
 
 ### c) For the model from b), can we also apply the Friedman test to test whether there is an effect of starter on acidity? Motivate your answer.
 
