@@ -66,7 +66,7 @@ the upper t-quantile.
 ```{r}
 alpha <- 1 - 0.97
 n <- length(x)
-ta <- qt(1-alpha/2, df=n-1)
+ta <- qnorm(1-alpha/2) # not qt(1-alpha/2, df=n-1) because "Assuming normality"
 ta
 ```
 
@@ -112,6 +112,8 @@ The confidence intervals look very close to each other. The one,
 calculated with a bootstrapping, is stochastic and therefore differs
 from launch to launch.
 
+The bootstrap CI is close to the CI based on asymptotic normality. Let CI1 be the bootstrap 97%-CI and CI2 be the 97%-CI based on asymptotic normality.The size of CI2 is smaller than the size of CI1 
+
 ### b) The doctor claims that the mean waiting time is less than 15 minutes. Under an assumption, verify this claim by a relevant t-test, explain the meaning of the CI in the R-output for this test. Propose and perform a suitable sign tests for this problem. Can we use yet another test based on ranks?
 
 One-sided t-test with $H_0$: mean waiting time $\geq$ 15; $H_1$: mean
@@ -139,7 +141,7 @@ The calculated p-value is `r round(res$p.value, 3)`. Since this is not less than
 fail to reject the null hypothesis. We do not have sufficient evidence
 to say that median waiting time is greater than 15 minutes.
 
-In the same manner one-sample Wilcoxon signed rank test may be applied. The one-sample Wilcoxon signed rank test is a non-parametric alternative to one-sample t-test when the data cannot be assumed to be normally distributed. It’s used to determine whether the median of the sample is equal to a known standard value (i.e. theoretical value). $H_{0}: m \leq m_{0}$, $H_{a}: m>m_{0}$ (greater).
+In the same manner one-sample Wilcoxon signed rank test may be applied. The one-sample Wilcoxon signed rank test is a non-parametric alternative to one-sample t-test when the data cannot be assumed to be normally distributed (but have to be symmetric). It’s used to determine whether the median of the sample is equal to a known standard value (i.e. theoretical value). $H_{0}: m \leq m_{0}$, $H_{a}: m>m_{0}$ (greater).
 
 ```{r}
 wilcox.test(x, mu=15, alternative="greater")
@@ -175,6 +177,8 @@ for(m in 13:15){
 
 conclusion should have focused on the performance of the test as we move further from
 H0, and that t-test is more powerful under normality assumptions.
+
+If we move further away from H0, the both tests perform better in terms of power.
 
 ### d) Let *p* be the probability that a patient has to wait longer than 15.5 minutes. Using asymptotic normality, the researcher computed the right end $\hat{p}_{r}$= 0.53 of the confidence interval $\left[\hat{p}_{l}, \hat{p}_{r}\right]$ for *p*. Recover the whole confidence interval and its confidence level.
 
@@ -372,12 +376,13 @@ for(i in 1:B){
   Xstar <- sample(seeded, replace=TRUE)
   Tstar[i] <- mean(Xstar)
 }
-lambda_hat <- 1/mean(Tstar)
-lambda_hat
+
 hist(Tstar)
 ```
 
 ```{r}
+lambda_hat <- 1/mean(Tstar)
+
 alpha <- 1 - 0.95
 deltastar <- 1/Tstar - lambda_hat
 d <- quantile(deltastar, c(alpha/2, 1-alpha/2))
@@ -453,6 +458,7 @@ drugs.
 
 ```{r}
 dogs <- read.table("data/dogs.txt", header=TRUE)
+head(dogs)
 ```
 
 ### a) Is it reasonable to assume that the three columns of dogs.txt were taken from normal populations?
@@ -545,9 +551,12 @@ them.
 
 ```{r}
 summary(aov)$coefficients
+iso = summary(aov)$coefficients[1]
+halo = summary(aov)$coefficients[2]
+cyclo = summary(aov)$coefficients[3]
 ```
 
-The estimated concentrations are 0.434, 0.035, 0.419 for isofluorane,
+The estimated concentrations are `r iso`, `r iso+halo`, `r iso+cyclo` for isofluorane,
 halothane, and cyclopropane respectively. For halothane t-test doesn't
 reveal a significant difference from 0.
 
@@ -578,9 +587,16 @@ set
 
 ```{r}
 blood <- read.table("data/hemoglobin.txt", header=TRUE)
-set.seed(42)
-rows <- sample(nrow(blood))
-randomized <- blood[rows, ]
+blood$rate = as.factor(blood$rate)
+blood$method = as.factor(blood$method)
+
+# set.seed(42)
+# rows <- sample(nrow(blood))
+# randomized <- blood[rows, ]
+I = 4 # 4 levels of rate
+J = 2 # 2 levels of method
+N = 10 # 80 observations/fishes (4*2*N = 80)
+rbind(rep(1:I,each=N*J),rep(1:J,N*I),sample(1:(N*I*J)))
 ```
 
 ### b) Perform the two-way ANOVA to test for effects of factors rate, method and their interaction on the response variable hemoglobin. Comment on your findings.
@@ -591,32 +607,51 @@ We want to test the following null hypotheses:
 3. no main effect of the second factor B.
 
 ```{r}
-res.aov3 <- aov(hemoglobin ~ rate * method, data = randomized)
+res.aov3 <- aov(hemoglobin ~ rate * method, data = blood)
 summary(res.aov3)
 ```
 
-The results of the Two Way Anova analysis show that Rate has a
-significant effect F = 11.933, p = 0.000905, but method has no significant
-effect F = 1.032, p= 0.312963. Furthermore, there is no interaction
-effect between rate and method F = 0.531, p = 0.468373. The results show
-that only rate is a significant factor in influencing the Hemoglobin
-levels. The method that is used is not important because it does not
-influence the result, accordingly, the method does neither decrease nor
-increase the influence of the rate.
+<!-- The results of the Two Way Anova analysis show that Rate has a -->
+<!-- significant effect F = 11.933, p = 0.000905, but method has no significant -->
+<!-- effect F = 1.032, p= 0.312963. Furthermore, there is no interaction -->
+<!-- effect between rate and method F = 0.531, p = 0.468373. The results show -->
+<!-- that only rate is a significant factor in influencing the Hemoglobin -->
+<!-- levels. The method that is used is not important because it does not -->
+<!-- influence the result, accordingly, the method does neither decrease nor -->
+<!-- increase the influence of the rate. -->
 
 As interaction is not significant, we check the additive model.
 ```{r}
-res.aov4 <- aov(hemoglobin ~ rate + method, data = randomized)
+res.aov4 <- aov(hemoglobin ~ rate + method, data = blood)
 summary(res.aov4)
 ```
 Method is still not important.
 
 ### c) Which of the two factors has the greatest influence? Is this a good question? Consider the additive model. Which combination of rate and method yield the highest hemoglobin? Estimate the mean hemoglobin value for rate 3 by using method A. What rate leads to the highest mean hemoglobin?
 
+```{r}
+hemo_lm <- lm(hemoglobin ~ rate + method, data = blood)
+anova(hemo_lm)
+```
+
+The factor ‘rate’ has the greatest influence on hemoglobin, since rate has a significant effect on hemoglobin and method does not have a significant effect on hemoglobin. However, since there is no interaction between rate and method, we have to remove the interaction term from the model and create an additive model (above) where there is no interaction. Still, only the variable 'rate' has a main effect on hemoglobin, and not the variable ‘method’.
+
+```{r}
+summary(hemo_lm)
+```
+The combination of the second rate and the B method yields the highest hemoglobin.
+
+```{r}
+# Estimate the mean hemoglobin value for rate 3 by using method A
+predict(hemo_lm, data.frame(method="A", rate="3"), type="response")
+```
+
+Rate 2 leads to the highest mean hemoglobin according to the coefs.
+
 ### d) Test the null hypothesis that the hemoglobin is the same for all rates by a one-way ANOVA test, ignoring the variable method. Is it right/wrong or useful/not useful to perform this test on this dataset?
 
 ```{r}
-res.aov <- aov(hemoglobin ~ rate, data = randomized)
+res.aov <- aov(hemoglobin ~ rate, data = blood)
 summary(res.aov)
 ```
 
@@ -647,55 +682,77 @@ positions. The combinations of levels of three factors form a
 three-dimensional latin square. (You may need to install the R-package
 *lme4*, which is not included in the standard distribution of R.)
 
-### a) Analyze the data in a three-way experiment without interactions with acidity as response and starter, batch and position as factors.
-
-By using summary command, can you tell whether there is a significant
-difference between the effects of starter 1 and starter 2 on acidity?
-
 ```{r}
 cream <- read.table("data/cream.txt", header=TRUE)
 
 cream$starter <- factor(cream$starter)
 cream$position <- factor(cream$position)
 cream$batch <- factor(cream$batch)
+```
 
+### a) Analyze the data in a three-way experiment without interactions with acidity as response and starter, batch and position as factors
+
+```{r}
 aovcream <- lm(acidity ~ batch + position + starter, data=cream)
+# Performing Anova Test
 anova(aovcream)
 ```
 
-Repeated Anova is used to analyze these data. The results of the
-analysis show that batch has a significant effect p = 0.00163 and
-starter has a significant effect p = 2.904e-05. However position does
-not show a significant effect p = 0.411.
-
-```{r, fig.width=8, fig.height=4}
+```{r, fig.width=12, fig.height=4}
 shapiro.test(residuals(aovcream))
-par(mfrow=c(1,2)); qqnorm(residuals(aovcream)); plot(fitted(aovcream), residuals(aovcream))
+par(mfrow=c(1,3))
+hist(residuals(aovcream))
+qqnorm(residuals(aovcream))
+qqline(residuals(aovcream))
+plot(fitted(aovcream), residuals(aovcream))
 ```
+To perform a three-way ANOVA test, we need to check normality. This is done by creating a QQ-plot and histogram of the residuals of the data. Additionally, the Shapiro-Wilk test was performed. The line in the QQ-plot looks linear and the distribution of the histogram can come from a normal distribution. Besides, the Shapiro-Wilk test had a p-value larger than 0.05 which means that the data comes from normal distribution. Therefore, a three-way ANOVA can be performed.
 
 The residuals also look normal and the fitted values show no pattern
 against them.
 
+```{r}
+summary(aovcream)
+```
+
+A three-way Anova is used to analyze this data. The results of the
+analysis show that batch has a significant effect p = 0.00163 and
+starter has a significant effect p = 2.904e-05. However position does
+not show a significant effect p = 0.411.
+
+Starter 1 is the intercept, which has a p-value of less than 0.05. Therefore there is a significant effect of starter 1 on acidity. While starter 2 has a p-value of 0.754, and therefore has no significant effect on acidity.
+
 ### b) Recall that the main interest is in the effect of starter on the acidity; factors *positions* and *batches* represent the block variables. Remove insignificant block variable(s) if there are such, and perform an ANOVA for the resulting "fixed effects" model. Which starter(s) lead to significantly different acidity?
 
+Insignificant block variables, are variables that have a p-value larger than 0.05. So this is the block variable position, which has a p-value of 0.411. Conclusively, the block variable Position needs to be removed from the model.
+
 ```{r}
-# why positions removed?
-ONLYIM <- lm(acidity ~ starter + batch, data=cream)
-
-summary(ONLYIM)$coefficients
+model <- lm(acidity ~ starter + batch, data=cream)
+#Performing Anova Test
+anova(model)
+```
+```{r}
+summary(model)
 ```
 
-Only starter 4 leads to a significant effect on acidity p = 2.01e-05.
+After deleting the block variable position, only starter 4 leads to a significant effect on acidity p = 2.01e-05.
 
-```{r, fig.width=8, fig.height=4}
-shapiro.test(residuals(ONLYIM))
-par(mfrow=c(1,2)); qqnorm(residuals(ONLYIM)); plot(fitted(ONLYIM), residuals(ONLYIM))
+```{r, fig.width=12, fig.height=4}
+shapiro.test(residuals(model))
+par(mfrow=c(1,3))
+hist(residuals(model))
+qqnorm(residuals(model))
+qqline(residuals(model))
+plot(fitted(model), residuals(model))
 ```
+The line in the QQ-plot looks linear and the distribution of the histogram can come from a normal distribution. Besides, the Shapiro-Wilk test had a p-value larger than 0.05 which means that the data comes from normal distribution. The residuals also look normal and the fitted values show no pattern against them.
 
 ### c) For the model from b), can we also apply the Friedman test to test whether there is an effect of starter on acidity? Motivate your answer.
 
 Friedman test doesn't rely on normality as it's based on ranks and works
 only with N=1.
+
+In the Friedman test the data does not need to come from a normal distribution, but it can also be used when the data comes from a normal distribution, like in this case. Instead of using the mean of the groups like in an ANOVA test the Friedman makes use of ranks. However, this change does not make any difference in the use of this test. Therefore, the Friedman test can also be used in this application to test whether there is an effect of starter on acidity. However, the Friedman test is not necessary when the ANOVA test has already been performed.
 
 ```{r}
 attach(cream)
@@ -714,10 +771,7 @@ library(lme4)
 
 ```{r}
 cream_lmer <- lmer(acidity ~ starter + (1|batch), REML=FALSE, data=cream)
-#summary(cream_lmer)
-cream_lmer1 <- lmer(acidity ~ starter + (1|batch), REML=FALSE, data=cream)
-#anova(cream_lmer)
+summary(cream_lmer)
 ```
 
-The outputs don't fit the report but the model from b is launched via
-mixed effects analysis.
+When using the fixed effects model the variables 1 and starter 4 had a significant effect on acidity. In the mixed effects model variables starter 1, starter 3, starter 4 had a significant effect on acidity. So, with the mixed effect model, more starters have a significant effect on acidity.
