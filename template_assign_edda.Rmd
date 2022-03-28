@@ -52,7 +52,7 @@ mu = mean(x)
 mu
 ```
 
-Next, we are going to construct a 97%-CI for $\mu$. The standard
+Next, we are going to construct a 97%-CI for $\mu$. A confidence interval for an unknown parameter $\mu$ is a random interval around the point estimate, containing $\mu$ with, e.g., 95% (97% in our case) confidence. The standard
 deviation $\sigma$ is unknown, therefore, we estimate it by $s$.
 
 ```{r}
@@ -146,7 +146,7 @@ In the same manner one-sample Wilcoxon signed rank test may be applied. The one-
 ```{r}
 wilcox.test(x, mu=15, alternative="greater")
 ```
-The same conclusion from the Wilcoxon sign test.
+The same conclusion from the Wilcoxon sign test. Failed to reject that $m \leq m_{0}$.
 
 ### c) Propose a way to compute the powers of the t-test and sign test from b) at $\mu$ = 14 and $\mu$ = 13, comment.
 
@@ -526,7 +526,7 @@ H_0 of the same population for both samples is not rejected.
 
 ```{r}
 dogframe <- data.frame(concentration=as.vector(as.matrix(dogs)),
-                    variety=factor(rep(1:3, each=10)))
+                    variety=factor(rep(1:3, each=10))) # ordered as iso, halo, cyclo
 
 options(contrasts = rep ("contr.treatment", 2)) # or contr.sum
 
@@ -548,6 +548,11 @@ par(mfrow=c(1,2)); qqnorm(residuals(aov)); plot(fitted(aov), residuals(aov))
 
 Residuals look normal and the fitted values show no pattern against
 them.
+
+```{r}
+# Show the levels
+levels(dogframe$variety)
+```
 
 ```{r}
 summary(aov)$coefficients
